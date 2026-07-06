@@ -12,10 +12,11 @@ from dotenv import load_dotenv
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+load_dotenv()
 
 config = AuthXConfig()
 
-config.JWT_SECRET_KEY = "aboba"
+config.JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 config.JWT_TOKEN_LOCATION = ["headers"]
 config.JWT_HEADER_NAME = "Authorization"
 config.JWT_HEADER_TYPE = "Bearer"
