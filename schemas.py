@@ -5,11 +5,13 @@ from typing import Literal
 class UserAddSchema(BaseModel):
     email: EmailStr
     password: SecretStr = Field(min_length=5, max_length=72)
+    role: Literal["User", "Moderator"]
 
 
 class UserResponse(BaseModel):
     id: int
     email: str
+    role: str
 
 
 
@@ -25,6 +27,7 @@ class PostResponse(BaseModel):
     post_name: str = Field(min_length=1, max_length=30)
     post_topic: Literal["Sports", "Politics", "Games", "News", "Tech", "Other"]
     post_body: str = Field(min_length=1, max_length=1000)
+    user_id: int
 
 
 class PostUpdate(BaseModel):

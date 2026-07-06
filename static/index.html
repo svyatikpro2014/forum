@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #0CAA41; --green-hover: #0a8f37;
+  --bg: #F5F6F7; --card: #FFFFFF; --line: #E4E6E9;
+  --text: #1D2129; --muted: #767F8C; --danger: #E0483E;
+  --input-bg: #FFFFFF; --shadow: 0 1px 2px rgba(0,0,0,.06); --chip-bg: #F0F1F2;
+}
+[data-theme="dark"] {
+  --green: #2FBF57; --green-hover: #38d063;
+  --bg: #0E1013; --card: #16181D; --line: #262A31;
+  --text: #E7E9EC; --muted: #8A929E; --danger: #FF6459;
+  --input-bg: #0E1013; --shadow: 0 1px 2px rgba(0,0,0,.4); --chip-bg: #21252C;
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; transition: background .2s, color .2s; }
+.topbar { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+.topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.brand { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+.brand b { color: var(--green); }
+.nav { display: flex; gap: 28px; }
+.nav a { color: var(--muted); text-decoration: none; font-weight: 500; padding: 20px 0; border-bottom: 2px solid transparent; cursor: pointer; }
+.nav a.active { color: var(--green); border-bottom-color: var(--green); }
+.top-right { display: flex; align-items: center; gap: 16px; }
+.theme-toggle { background: none; border: 1px solid var(--line); border-radius: 20px; width: 38px; height: 38px; cursor: pointer; font-size: 16px; color: var(--text); display: flex; align-items: center; justify-content: center; }
+.theme-toggle:hover { border-color: var(--muted); }
+.layout { max-width: 1180px; margin: 24px auto; padding: 0 20px; display: grid; grid-template-columns: 240px 1fr 320px; gap: 24px; align-items: start; }
+@media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .side { display: none; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+.side-left { display: flex; flex-direction: column; gap: 16px; }
+.btn-post { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 600; font-size: 15px; cursor: pointer; width: 100%; }
+.btn-post:hover { background: var(--green-hover); }
+.side-title { font-weight: 700; font-size: 15px; padding: 16px 16px 8px; }
+.topic-nav { padding: 0 8px 12px; }
+.topic-nav button { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; color: var(--text); font-size: 14px; font-family: inherit; padding: 9px 10px; border-radius: 7px; cursor: pointer; text-align: left; }
+.topic-nav button:hover { background: var(--chip-bg); }
+.topic-nav button.active { background: var(--chip-bg); font-weight: 600; }
+.topic-dot { width: 9px; height: 9px; border-radius: 50%; }
+.feed { display: flex; flex-direction: column; gap: 16px; }
+.composer { padding: 16px; }
+.composer-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; }
+.composer input, .composer select, .composer textarea, .modal input, .modal select, .modal textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none; }
+.composer input:focus, .composer textarea:focus, .composer select:focus { border-color: var(--green); }
+.composer .grid { display: flex; gap: 10px; margin-bottom: 10px; }
+.composer textarea { min-height: 70px; resize: vertical; margin-bottom: 10px; }
+.composer .actions { display: flex; justify-content: space-between; align-items: center; }
+.status { font-size: 13px; }
+.status.ok { color: var(--green); }
+.status.err { color: var(--danger); }
+.btn-primary { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-primary:hover { background: var(--green-hover); }
+.btn-ghost { background: none; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 9px 16px; cursor: pointer; font-family: inherit; font-weight: 500; }
+.btn-ghost:hover { border-color: var(--muted); }
+.post { padding: 16px; }
+.post-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.post-topic-badge { font-weight: 600; font-size: 14px; }
+.post-author { color: var(--muted); font-size: 13px; }
+.post-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+.post-body { color: var(--text); line-height: 1.5; white-space: pre-wrap; }
+.post-foot { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.post-foot button { background: none; border: none; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.post-foot button:hover { background: var(--chip-bg); }
+.post-foot button.del:hover { color: var(--danger); }
+.empty { padding: 48px 20px; text-align: center; color: var(--muted); }
+.side-right { display: flex; flex-direction: column; gap: 16px; }
+.info-card { padding: 16px; }
+.info-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.info-card p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .val { font-weight: 600; }
+.auth-card { padding: 20px; }
+.auth-card h2 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+.auth-card input, .auth-card select { width: 100%; background: var(--input-bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 14px; margin-bottom: 10px; outline: none; }
+.auth-card input:focus { border-color: var(--green); }
+.auth-card .btn-row { display: flex; gap: 8px; }
+.auth-card .btn-row button { flex: 1; }
+.modal-back { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modal-back.open { display: flex; }
+.modal { background: var(--card); border-radius: 12px; padding: 22px; width: 100%; max-width: 500px; }
+.modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+.modal .grid { display: flex; gap: 10px; margin-bottom: 10px; }
+.modal textarea { min-height: 90px; resize: vertical; margin-bottom: 14px; }
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; }
+.hidden { display: none !important; }
+.session-badge { font-size: 13px; color: var(--muted); }
+.mod-tag { color: var(--green); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">FOR<b>UM</b></div>
+    <div class="nav"><a class="active">Community</a></div>
+    <div class="top-right">
+      <span class="session-badge" id="sessionBadge">guest</span>
+      <button class="btn-ghost hidden" id="logoutBtn" style="padding:7px 14px;">Log out</button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+    </div>
+  </div>
+</div>
+<div class="layout">
+  <div class="side-left">
+    <button class="btn-post" id="scrollComposeBtn">+ New post</button>
+    <div class="card">
+      <div class="side-title">Categories</div>
+      <div class="topic-nav" id="topicNav">
+        <button class="active" data-topic="All">📋 All</button>
+        <button data-topic="Sports"><span class="topic-dot" style="background:#0CAA41"></span> Sports</button>
+        <button data-topic="Politics"><span class="topic-dot" style="background:#E0483E"></span> Politics</button>
+        <button data-topic="Games"><span class="topic-dot" style="background:#8B5CF6"></span> Games</button>
+        <button data-topic="News"><span class="topic-dot" style="background:#2F6FED"></span> News</button>
+        <button data-topic="Tech"><span class="topic-dot" style="background:#0EA5C4"></span> Tech</button>
+        <button data-topic="Other"><span class="topic-dot" style="background:#767F8C"></span> Other</button>
+      </div>
+    </div>
+  </div>
+  <div class="feed">
+    <div class="card auth-card" id="authCard">
+      <h2>Log in to post</h2>
+      <input id="email" type="email" placeholder="email" autocomplete="email">
+      <input id="password" type="password" placeholder="password" autocomplete="current-password">
+      <select id="role"><option value="User">User</option><option value="Moderator">Moderator</option></select>
+      <div class="btn-row">
+        <button class="btn-primary" id="loginBtn">Log in</button>
+        <button class="btn-ghost" id="registerBtn">Sign up</button>
+      </div>
+      <div class="status" id="authStatus" style="margin-top:10px;"></div>
+    </div>
+    <div class="card composer hidden" id="composer">
+      <div class="composer-head">
+        <div class="avatar" id="composerAvatar">U</div>
+        <div style="flex:1;"><input id="postName" placeholder="Post title" maxlength="30"></div>
+      </div>
+      <div class="grid">
+        <select id="postTopic"><option>Sports</option><option>Politics</option><option>Games</option><option>News</option><option>Tech</option><option>Other</option></select>
+      </div>
+      <textarea id="postBody" placeholder="Share something..." maxlength="1000"></textarea>
+      <div class="actions"><span class="status" id="postStatus"></span><button class="btn-primary" id="createPostBtn">Publish</button></div>
+    </div>
+    <div id="postsList"></div>
+  </div>
+  <div class="side-right side">
+    <div class="card info-card">
+      <h3>Stats</h3>
+      <div class="stat-row"><span>Total posts</span><span class="val" id="statTotal">0</span></div>
+      <div class="stat-row"><span>Categories</span><span class="val">6</span></div>
+      <div class="stat-row"><span>You</span><span class="val" id="statMe">guest</span></div>
+    </div>
+  </div>
+</div>
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3>Edit post</h3>
+    <div class="grid">
+      <input id="editName" placeholder="Title" maxlength="30">
+      <select id="editTopic"><option>Sports</option><option>Politics</option><option>Games</option><option>News</option><option>Tech</option><option>Other</option></select>
+    </div>
+    <textarea id="editBody" maxlength="1000"></textarea>
+    <div class="actions"><button class="btn-ghost" id="editCancel">Cancel</button><button class="btn-primary" id="editSave">Save</button></div>
+  </div>
+</div>
+<script>
+const API = "http://127.0.0.1:8000";
+const TOPIC_COLORS = { Sports:"#0CAA41", Politics:"#E0483E", Games:"#8B5CF6", News:"#2F6FED", Tech:"#0EA5C4", Other:"#767F8C" };
+const el = id => document.getElementById(id);
+let currentUser = null, currentFilter = "All", allPosts = [], editingId = null;
+function applyTheme(t){ document.documentElement.setAttribute("data-theme",t); el("themeToggle").textContent = t==="dark"?"☀️":"🌙"; localStorage.setItem("theme",t); }
+el("themeToggle").onclick = () => { const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light"; applyTheme(cur==="dark"?"light":"dark"); };
+applyTheme(localStorage.getItem("theme")||"light");
+const getToken=()=>localStorage.getItem("token");
+const setToken=t=>localStorage.setItem("token",t);
+const clearToken=()=>localStorage.removeItem("token");
+const authHeaders=()=>getToken()?{"Authorization":"Bearer "+getToken()}:{};
+function tokenSub(){ const t=getToken(); if(!t) return null; try{ return String(JSON.parse(atob(t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))).sub);}catch{return null;} }
+async function refreshSession(){
+  if(!getToken()){ currentUser=null; el("sessionBadge").textContent="guest"; el("logoutBtn").classList.add("hidden"); el("authCard").classList.remove("hidden"); el("composer").classList.add("hidden"); el("statMe").textContent="guest"; return; }
+  el("logoutBtn").classList.remove("hidden"); el("authCard").classList.add("hidden"); el("composer").classList.remove("hidden");
+  try{ const res=await fetch(`${API}/auth/me`,{headers:authHeaders()}); if(res.ok) currentUser=await res.json(); else currentUser={id:tokenSub(),email:null,role:null}; }
+  catch{ currentUser={id:tokenSub(),email:null,role:null}; }
+  const label=currentUser.email||("user #"+currentUser.id);
+  const mod=currentUser.role==="Moderator"?' <span class="mod-tag">MOD</span>':"";
+  el("sessionBadge").innerHTML=label+mod; el("statMe").innerHTML=label+mod;
+  el("composerAvatar").textContent=(currentUser.email||"U")[0].toUpperCase();
+}
+function canManage(post){ if(!currentUser) return false; if(currentUser.role==="Moderator") return true; if(post.user_id==null) return false; return String(post.user_id)===String(currentUser.id); }
+function showStatus(id,msg,ok){ const n=el(id); n.textContent=msg; n.className="status "+(ok?"ok":"err"); setTimeout(()=>{n.textContent="";},4000); }
+const esc=s=>{ const d=document.createElement("div"); d.textContent=s??""; return d.innerHTML; };
+el("registerBtn").onclick=async()=>{ try{ const res=await fetch(`${API}/auth/registration`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:el("email").value,password:el("password").value,role:el("role").value})}); const d=await res.json(); if(!res.ok) throw new Error(JSON.stringify(d.detail??d)); showStatus("authStatus","Done — now log in",true);}catch(e){showStatus("authStatus",e.message,false);} };
+el("loginBtn").onclick=async()=>{ try{ const res=await fetch(`${API}/auth/login`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:el("email").value,password:el("password").value,role:el("role").value})}); const d=await res.json(); if(!res.ok) throw new Error(JSON.stringify(d.detail??d)); setToken(d["access token"]); await refreshSession(); renderPosts();}catch(e){showStatus("authStatus",e.message,false);} };
+el("logoutBtn").onclick=async()=>{ clearToken(); await refreshSession(); renderPosts(); };
+el("createPostBtn").onclick=async()=>{ try{ const res=await fetch(`${API}/posts/`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({post_name:el("postName").value,post_topic:el("postTopic").value,post_body:el("postBody").value})}); const d=await res.json(); if(!res.ok) throw new Error(JSON.stringify(d.detail??d)); el("postName").value=""; el("postBody").value=""; showStatus("postStatus","Published",true); loadPosts();}catch(e){showStatus("postStatus",e.message,false);} };
+async function loadPosts(){ try{ const res=await fetch(`${API}/posts/`); allPosts=await res.json(); if(!Array.isArray(allPosts)) allPosts=[]; }catch{ allPosts=[]; } renderPosts(); }
+function renderPosts(){
+  el("statTotal").textContent=allPosts.length;
+  const list=el("postsList");
+  const posts=currentFilter==="All"?allPosts:allPosts.filter(p=>p.post_topic===currentFilter);
+  if(!posts.length){ list.innerHTML=`<div class="card empty">Nothing here${currentFilter!=="All"?" in "+currentFilter:""}. Be the first!</div>`; return; }
+  list.innerHTML="";
+  [...posts].reverse().forEach(post=>{
+    const color=TOPIC_COLORS[post.post_topic]??"var(--muted)";
+    const author="user #"+(post.user_id??"?");
+    const div=document.createElement("div");
+    div.className="card post"; div.style.marginBottom="16px";
+    div.innerHTML=`
+      <div class="post-head">
+        <div class="avatar" style="background:${color}">${esc(post.post_topic[0])}</div>
+        <div><div class="post-topic-badge" style="color:${color}">${esc(post.post_topic)}</div><div class="post-author">${esc(author)}</div></div>
+      </div>
+      <div class="post-title">${esc(post.post_name)}</div>
+      <div class="post-body">${esc(post.post_body)}</div>
+      ${canManage(post) ? `
+      <div class="post-foot">
+        <button data-action="edit" data-id="${post.id}">✎ Edit</button>
+        <button class="del" data-action="delete" data-id="${post.id}">🗑 Delete</button>
+      </div>` : ""}`;
+    list.appendChild(div);
+  });
+}
+el("postsList").addEventListener("click",async e=>{
+  const btn=e.target.closest("button[data-action]"); if(!btn) return;
+  const id=btn.dataset.id;
+  if(btn.dataset.action==="delete"){ if(!confirm("Delete this post?")) return; const res=await fetch(`${API}/posts/${id}`,{method:"DELETE",headers:authHeaders()}); if(!res.ok){const d=await res.json(); alert("Error: "+JSON.stringify(d.detail??d)); return;} loadPosts(); }
+  if(btn.dataset.action==="edit"){ const post=allPosts.find(p=>String(p.id)===String(id)); if(!post) return; editingId=id; el("editName").value=post.post_name; el("editTopic").value=post.post_topic; el("editBody").value=post.post_body; el("modalBack").classList.add("open"); }
+});
+el("editCancel").onclick=()=>el("modalBack").classList.remove("open");
+el("modalBack").addEventListener("click",e=>{ if(e.target===el("modalBack")) el("modalBack").classList.remove("open"); });
+el("editSave").onclick=async()=>{ const res=await fetch(`${API}/posts/${editingId}`,{method:"PATCH",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({post_name:el("editName").value,post_topic:el("editTopic").value,post_body:el("editBody").value})}); if(!res.ok){const d=await res.json(); alert("Error: "+JSON.stringify(d.detail??d)); return;} el("modalBack").classList.remove("open"); loadPosts(); };
+el("topicNav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; document.querySelectorAll("#topicNav button").forEach(x=>x.classList.remove("active")); b.classList.add("active"); currentFilter=b.dataset.topic; renderPosts(); });
+el("scrollComposeBtn").onclick=()=>{ if(getToken()) el("postName").focus(); else el("email").focus(); window.scrollTo({top:0,behavior:"smooth"}); };
+(async()=>{ await refreshSession(); loadPosts(); })();
+</script>
+</body>
+</html>
